@@ -1,17 +1,18 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="mt-5">
-    <h2 class="mb-4"  style="color: rgba(243, 156, 18, 0.55);">Lär dig att busa!</h2>
+<div class="container mt-5">
+    <h2 class="mb-4" style="color: rgba(243, 156, 18, 0.55);">Forum</h2>
     <div class="list-group">
-        <a href="#" class="list-group-item list-group-item-action">
-            <h5 class="mb-1" style="color: #0056b3;">Mr.Muscle och Aliminium</h5>
-            <p class="mb-1" style="color: #807e7e;">Vilken jädra smäll...</p>
-        </a>
-        <a href="#" class="list-group-item list-group-item-action">
-            <h5 class="mb-1" style="color: #0056b3;">Surströmming i skolventilationen</h5>
-            <p class="mb-1" style="color: #807e7e;">Luktar som bara fan...</p>
-        </a>
+        {% for thread in threads %}
+            <a href="{{ url_for('view_thread', thread_id=thread.id) }}" class="list-group-item list-group-item-action border rounded" style="border-color: black;">
+                <h5 class="mb-1" style="color: #0056b3;">{{ thread.title }}</h5>
+                <p class="mb-1" style="color: #807e7e;">{{ thread.content[:100] }}...</p>
+                <small class="text-muted">Skapad av {{ thread.author.username }} | {{ thread.timestamp.strftime('%B %d, %Y') }}</small>
+            </a>
+        {% else %}
+            <p>Inga trådar har skapats ännu.</p>
+        {% endfor %}
     </div>
 </div>
 {% endblock %}

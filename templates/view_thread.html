@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card border rounded" style="border-color: black;">
+        <div class="card-header">
+            <h2>{{ thread.title }}</h2>
+        </div>
+        <div class="card-body">
+            <p>{{ thread.content }}</p>
+            <p class="text-muted">Skapad av {{ thread.author.username }} | {{ thread.timestamp.strftime('%B %d, %Y') }}</p>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

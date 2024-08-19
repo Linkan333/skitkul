@@ -4,21 +4,24 @@
 <div class="row justify-content-center mt-5">
     <div class="col-md-6">
         <h2 class="mb-4">Registrera Dig</h2>
-        <form action="/register" method="POST">
+        <form method="POST" action="{{ url_for('register') }}">
+            {{ form.hidden_tag() }}
             <div class="mb-3">
-                <label for="username" class="form-label" style="color: #807e7e;">Användarnamn</label>
-                <input type="text" class="form-control" id="username" name="username" required>
+                {{ form.username.label(class="form-label") }}
+                {{ form.username(class="form-control") }}
             </div>
             <div class="mb-3">
-                <label for="email" class="form-label" style="color: #807e7e;">E-Post Address</label>
-                <input type="email" class="form-control" id="email" name="email" required>
+                {{ form.email.label(class="form-label") }}
+                {{ form.email(class="form-control") }}
             </div>
             <div class="mb-3">
-                <label for="password" class="form-label" style="color: #807e7e;">Lösenord</label>
-                <input type="password" class="form-control" id="password" name="password" required>
+                {{ form.password.label(class="form-label") }}
+                {{ form.password(class="form-control") }}
             </div>
-            <buttonm type="submit" class="btn btn-primary" style="background-color: #f39c12; border: 1px solid #e67e22;">Registrera dig</buttonm>
-            </form>
+            <div class="d-grid">
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </form>
     </div>
 </div>
 

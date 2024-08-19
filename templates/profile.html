@@ -1,0 +1,59 @@
+{% extends "layout.html" %}
+
+
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">{{ current_user.username }}</h5>
+                        <p class="card-text">{{ current_user.email }}</p>
+                        <a href="#" class="btn btn-primary">Redigera Profil</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4>Profil Information</h4>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Användarnamn:</strong> {{ current_user.username }}</p>
+                        <p><strong>Email:</strong> {{ current_user.email }}</p>
+                        <p><strong>Medlem sedan: </strong> {{ current_user.join_date.strftime('%B %d, %Y') }}</p>
+                    </div>
+                </div>
+
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4>Tidigare Aktivitet</h4>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            <li>Lade upp i <a href="#">Tråd titel 1</a></li>
+                            <li>Kommenterade på <a href="#">Tråd titel 2</a></li>
+                            <li>Gillade ett inlägg i <a href="#">Tråd titel 3</a></li>
+                        </ul>
+                    </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h4>Konto Inställningar</h4>
+                </div>
+                <div class="card-body">
+                    <a href="#" class="btn btn-danger">Radera Konto ( {{ current_user.username }} )</a>
+                    <a href="#" class="btn btn-secondary">Byt lösenord</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</html>
+
+{% endblock %}

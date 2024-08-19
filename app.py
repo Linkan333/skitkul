@@ -6,7 +6,7 @@ from datetime import datetime
 from flask_migrate import Migrate
 import locale
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
+from wtforms import StringField, PasswordField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Email, Length
 from flask_wtf.csrf import CSRFProtect
 
@@ -37,6 +37,7 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(150), nullable=False)
     join_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     threads = db.relationship('Thread', backref='author', lazy=True)
+    is_admin = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
         return f'<User {self.username}>'
@@ -44,7 +45,7 @@ class User(db.Model, UserMixin):
 
 class ThreadForm(FlaskForm):
     title = StringField('Titel', validators=[DataRequired(), Length(min=3, max=150)])
-    content = StringField('Innehåll', validators=[DataRequired()])
+    content = TextAreaField('Innehåll', validators=[DataRequired()], render_kw={"rows": 20})
     submit = SubmitField('Skapa Tråd')
     
 
@@ -86,6 +87,22 @@ def forum():
 def view_thread(thread_id):
     thread = Thread.query.get_or_404(thread_id)
     return render_template('view_thread.html', thread=thread)
+
+@app.route('/threads/<int:thread_id>/delete', methods=['POST'])
+@login_required
+def delete_thread(thread_id):
+    thread = Thread.query.get_or_404(thread_id)
+
+    if current_user.id != thread.author_id and not current_user.is_admin:
+        flash('Du har inte behörighet att ta bort denna tråd.', 'danger')
+        return redirect(url_for('forum'))
+    
+    db.session.delete(thread)
+    db.session.commit()
+    flash('Tråden har tagits bort.', 'success')
+    return redirect(url_for('forum'))
+
+
 
 @app.route('/threads/new', methods=['GET', 'POST'])
 @login_required
@@ -153,5 +170,11 @@ locale.setlocale(locale.LC_TIME, 'sv_SE.UTF-8')
 
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()
+        user = User.query.filter_by(username='admin').first()
+        if user:
+            user.is_admin = True
+            db.session.commit()
+            print(f"User {user.username} has been set as admin.")
+        else:
+            print("Admin user not found")
     app.run(debug=True, host='0.0.0.0', port=8080)

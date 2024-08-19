@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <h2 class="mb-4">Logga in</h2>
+        <form action="/login" method="POST">
+            <div class="mb-3">
+                <label for="email" class="form-label" style="color: #807e7e;">E-Post address</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label" style="color: #807e7e;">Lösenord</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="background-color: #f39c12; border: 1px solid #e67e22;">Logga in</button>
+
+            
+        </form>
+        <small class="d-block mt-3">Har du inget konto?
+            <a href="/register" style="color: rgb(243, 156, 18);">Registrera Dig!</a>
+        </small>
+    </div>
+</div>
+{% endblock %}

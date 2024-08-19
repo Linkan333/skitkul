@@ -1,0 +1,9 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    background: whitesmoke;
+}
+
+.navbar-brand img {
+    max-height: 50px;
+}
+

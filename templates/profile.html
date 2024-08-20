@@ -36,10 +36,16 @@
                     </div>
                     <div class="card-body">
                         <ul>
-                            <li>Lade upp i <a href="#">Tråd titel 1</a></li>
-                            <li>Kommenterade på <a href="#">Tråd titel 2</a></li>
-                            <li>Gillade ett inlägg i <a href="#">Tråd titel 3</a></li>
-                        </ul>
+                            {% for thread in threads %}
+                            <a href="{{ url_for('view_thread', thread_id=thread.id) }}" class="list-group-item list-group-item-action border rounded" style="border-color: black;">
+                                <h5 class="mb-1" style="color: rgba(243, 156, 18, 0.55);">{{ thread.title }}</h5>
+                                <p class="mb-1" style="color: #807e7e;">{{ thread.author.username }}  - skapade ett inlägg  <a href="{{ url_for('view_thread', thread_id=thread.id) }}">{{ thread.content[:100] }}...</a></p>
+                                <small class="text-muted">{{ thread.timestamp.strftime('%B %d, %Y') }}</small>
+                            </a>
+                            {% else %}
+                                <p>Användaren har inte skapat en tråd eller inlägg ännu...</p>
+                            {% endfor %}
+                        </ul>                        
                     </div>
             </div>
 

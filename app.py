@@ -160,7 +160,8 @@ def register():
 
 @app.route('/profile')
 def profile():
-    return render_template('profile.html')
+    threads = Thread.query.filter_by(author_id=current_user.id).all()
+    return render_template('profile.html', threads=threads)
 
 migrate = Migrate(app, db)
 

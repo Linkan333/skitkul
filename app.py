@@ -20,12 +20,27 @@ db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
+class Reply(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    thread_id = db.Column(db.Integer, db.ForeignKey('thread.id'), nullable=False)
+    author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    author = db.relationship('User', backref='replies')
+
+    def __repr__(self):
+        return f'<Svar {self.content[:20]}...>'
+
 class Thread(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(150), nullable=False)
     content = db.Column(db.Text, nullable=False)
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+    replies = db.relationship('Reply', backref='thread', lazy=True, cascade='all, delete-orphan')
 
     def __repr__(self):
         return f'<Tråd {self.title}>'
@@ -42,6 +57,10 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return f'<User {self.username}>'
     
+
+class ReplyForm(FlaskForm):
+    content = TextAreaField('Innehåll', validators=[DataRequired()], render_kw={"rows": 5})
+    submit = SubmitField('Svara')
 
 class ThreadForm(FlaskForm):
     title = StringField('Titel', validators=[DataRequired(), Length(min=3, max=150)])
@@ -83,10 +102,31 @@ def forum():
     return render_template('forum.html', threads=threads)
 
 
-@app.route('/threads/<int:thread_id>', methods=['GET'])
+@app.route('/threads/<int:thread_id>', methods=['GET', 'POST'])
+@login_required
 def view_thread(thread_id):
-    thread = Thread.query.get_or_404(thread_id)
-    return render_template('view_thread.html', thread=thread)
+    thread = Thread.query.get_or_404(thread_id)  # Fetch the thread to ensure it exists
+    form = ReplyForm()
+    
+    if form.validate_on_submit():
+        # Create a new reply, associating it with the thread
+        reply = Reply(content=form.content.data, author=current_user, thread=thread)
+        db.session.add(reply)
+        db.session.commit()
+        flash('Ditt svar har lagts till.', 'success')
+        return redirect(url_for('view_thread', thread_id=thread.id))
+
+    replies = Reply.query.filter_by(thread_id=thread.id).order_by(Reply.timestamp.asc()).all()
+
+    if form.validate_on_submit():
+        reply = Reply(content=form.content.data, author=current_user, thread=thread)
+        db.session.add(reply)
+        db.session.commit()
+        flash('Ditt svar har lagts till.', 'success')
+        return redirect(url_for('view_thread', thread_id=thread.id))
+
+    return render_template('view_thread.html', thread=thread, form=form, replies=replies)
+
 
 @app.route('/threads/<int:thread_id>/delete', methods=['POST'])
 @login_required
@@ -112,7 +152,7 @@ def new_thread():
         thread = Thread(title=form.title.data, content=form.content.data, author=current_user)
         db.session.add(thread)
         db.session.commit()
-        flash('Tråden skapades', 'success')
+        flash('Du skapade en tråd {thread.id} skapades', 'success')
         return redirect(url_for('forum'))
     return render_template('new_thread.html', form=form)
 
@@ -125,6 +165,7 @@ def login():
         user = User.query.filter_by(email=email).first()
         if user and check_password_hash(user.password, password):
             login_user(user)
+            flash("Inloggning Lyckades omdirigerar sidan till forumet!", "success")
             return redirect(url_for('forum'))
         else:
             flash("Fel E-Post address eller lösenord, Försök igen", 'danger')
@@ -150,7 +191,7 @@ def register():
         try:
             db.session.add(new_user)
             db.session.commit()
-            flash("Registrering lyckades. Du kan nu logga in.", 'success')
+            flash("Du skapade ett konto, omdirigerar till login", 'success')
             return redirect(url_for('login'))
         except Exception as e:
             flash(f"Det uppstod ett problem att lägga till din data: {str(e)}", 'danger')
@@ -162,6 +203,23 @@ def register():
 def profile():
     threads = Thread.query.filter_by(author_id=current_user.id).all()
     return render_template('profile.html', threads=threads)
+
+
+@app.route('/threads/<int:thread_id>/reply', methods=['GET', 'POST'])
+@login_required
+def reply_thread(thread_id):
+    thread = Thread.query.get_or_404(thread_id)
+    form = ReplyForm()
+    if form.validate_on_submit():
+        reply = Reply(content=form.content.data, author=current_user, thread=thread)
+        db.session.add(reply)
+        db.session.commit()
+        flash('Ditt svar har publicerats.', 'success')
+        return redirect(url_for('view_thread', thread_id=thread.id))
+    return render_template('reply_thread.html', thread=thread, form=form)
+
+
+
 
 migrate = Migrate(app, db)
 

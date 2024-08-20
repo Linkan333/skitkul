@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4" style="color: rgba(243, 156, 18, 0.55);">Svara på Tråd: {{ thread.title }}</h2>
+    <form method="POST" action="{{ url_for('reply_thread', thread_id=thread.id) }}">
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+            {{ form.content.label(class="form-label") }}
+            {{ form.content(class="form-control") }}
+        </div>
+        <div class="d-grid">
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+    </form>
+</div>
+
+<div class="container mt-5">
+    <h3 class="mb-4">Tidigare Svar</h3>
+    <ul class="list-group">
+        {% for reply in thread.replies %}
+        <li class="list-group-item">
+            <p>{{ reply.content }}</p>
+            <small class="text-muted">Skrivet av {{ reply.author.username }} den {{ reply.timestamp.strftime('%B %d, %Y') }}</small>
+        </li>
+        {% else %}
+        <p>Inga svar har lagts till ännu...</p>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

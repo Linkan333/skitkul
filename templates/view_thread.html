@@ -14,9 +14,23 @@
         <div class="card-body">
             <p>{{ thread.content }}</p>
             <p class="text-muted">Skapad av {{ thread.author.username }} | {{ thread.timestamp.strftime('%B %d, %Y') }}</p>
+
+            <a href="{{ url_for('reply_thread', thread_id=thread.id) }}" class="text-dark"><i class="fa-solid fa-reply"></i> Svara på inlägget.</a>
         </div>
     </div>
 </div>
 
-
+<h4 class="mt-5">Tidigare Svar</h4>
+{% if replies %}
+    <ul class="list-group mb-4">
+        {% for reply in replies %}
+        <li class="list-group-item">
+            <p>{{ reply.content }}</p>
+            <p class="text-muted">Skapad av {{ reply.author.username }} | {{ reply.timestamp.strftime('%B %d, %Y') }}</p>
+        </li>
+    {% endfor %}
+    {% else %}
+        <p>Ingen har svarat på tråden ännu...</p>
+    {% endif %}
+    </ul>
 {% endblock %}

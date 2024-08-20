@@ -29,6 +29,23 @@
                     </div>
                 </div>
 
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4>Ändra Profilbild</h4>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" enctype="multipart/form-data">
+                            {{ form.hidden_tag() }}
+                            <div class="mb-3">
+                                {{ form.profile_picture.label(class="form-label") }}
+                                {{ form.profile_picture(class="form-control") }}
+                            </div>
+                            <div class="d-grid">
+                                {{ form.submit(class="btn btn-primary") }}
+                        </form>
+                    </div>
+                </div>
+
 
                 <div class="card mb-4">
                     <div class="card-header">

@@ -9,6 +9,9 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Email, Length
 from flask_wtf.csrf import CSRFProtect
+from flask_wtf.file import FileField, FileAllowed
+import os
+from werkzeug.utils import secure_filename
 
 
 app = Flask(__name__)
@@ -68,10 +71,12 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(150), nullable=False, unique=True)
     email = db.Column(db.String(150), nullable=False, unique=True)
     password = db.Column(db.String(150), nullable=False)
+    profile_picture = db.Column(db.String(150), nullable=True)
     join_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     threads = db.relationship('Thread', backref='author', lazy=True)
     is_admin = db.Column(db.Boolean, default=False)
     notifications = db.relationship('Notification', back_populates='user', lazy='dynamic')
+
 
     def __repr__(self):
         return f'<User {self.username}>'
@@ -98,6 +103,10 @@ class RegistrationForm(FlaskForm):
     email = StringField('E-postadress', validators=[DataRequired(), Email()])
     password = PasswordField('Lösenord', validators=[DataRequired(), Length(min=6)])
     submit = SubmitField('Registrera dig')
+
+class UpdateProfileForm(FlaskForm):
+    profile_picture = FileField('Byt profilbild', validators=[FileAllowed(['jpg', 'png'])])
+    submit = SubmitField('Uppdatera')
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -229,10 +238,27 @@ def register():
     return render_template('register.html', form=form)
 
 
-@app.route('/profile')
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required
 def profile():
-    threads = Thread.query.filter_by(author_id=current_user.id).all()
-    return render_template('profile.html', threads=threads)
+    form = UpdateProfileForm()
+    if form.validate_on_submit():
+        if form.profile_picture.data:
+            picture_file = save_profile_picture(form.profile_picture.data)
+            current_user.profile_picture = picture_file
+            db.session.commit()
+            flash('Din profilbild har uppdaterats.', 'info')
+        return redirect(url_for('profile'))
+    
+    return render_template('profile.html', form=form)
+
+def save_profile_picture(form_picture):
+    _, f_ext = os.path.splitext(form_picture.filename)
+    picture_fn = secure_filename(current_user.username + f_ext)
+    picture_path = os.path.join(app.root_path, 'static/profile_pics', picture_fn)
+
+    form_picture.save(picture_path)
+    return picture_fn
 
 
 @app.route('/threads/<int:thread_id>/reply', methods=['GET', 'POST'])

@@ -26,8 +26,16 @@
     <ul class="list-group mb-4">
         {% for reply in replies %}
         <li class="list-group-item">
-            <p>{{ reply.content }}</p>
-            <p class="text-muted">Skapad av {{ reply.author.username }} | {{ reply.timestamp.strftime('%B %d, %Y') }}</p>
+            <div class="d-flex align-items-center">
+                <img src="{{ url_for('static', filename='profile_pics/' + reply.author.profile_picture) }}" alt="Profile Picture" class="img-thumbnail text-muted" style="width: 50px; height: 50px; margin-right: 10px;">
+                <div>
+                    <p class="mb-0 text-muted"> - {{ reply.author.username }}</p>
+                </div>
+                {% if current_user.is_admin %}
+                 <p class="mb-1 text-muted">{{ reply.author.email }}</p>
+                {% endif %}
+            </div>
+            <p class="align-items-center ms-2">{{ reply.content }}</p>
         </li>
     {% endfor %}
     {% else %}

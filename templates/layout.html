@@ -42,23 +42,18 @@
                 </li>
                 {% if current_user.is_authenticated %}
 
-                    <li class="nav-item">
+                    <li class="nav-item ">
                         <a class="nav-link" href="/threads/new"><i class="fas fa-plus"></i> Skapa Tråd</a>
                     </li>
             
                     <li class="nav-item">
-                        <a class="nav-link" href="/profile">{{ current_user.username }}</a>
+                        <a class="nav-link" href="/profile">Profil, {{ current_user.username }}</a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="/logout">Logga ut</a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="/notifications"><i class="fa-solid fa-bell"></i></a>
+                        <a class="nav-link" href="/logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logga ut</a>
                     </li>
                 {% else %}
-                
                 <li class="nav-item">
                     <a class="nav-link" href="/login">Logga in</a>
                 </li>

@@ -10,6 +10,7 @@ from wtforms import StringField, PasswordField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Email, Length
 from flask_wtf.csrf import CSRFProtect
 
+
 app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
@@ -19,6 +20,23 @@ app.config['SECRET_KEY'] = 'your_secret_key_here'
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
+csrf = CSRFProtect(app)
+
+
+class Notification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    message = db.Column(db.String(255), nullable=False)
+    is_read = db.Column(db.Boolean, default=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    thread_id = db.Column(db.Integer, db.ForeignKey('thread.id'))
+
+    user = db.relationship('User', back_populates='notifications')
+    thread = db.relationship('Thread')
+
+    def __repr__(self):
+        return f'<Notifikation {self.message}>'
+
 
 class Reply(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -53,6 +71,7 @@ class User(db.Model, UserMixin):
     join_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     threads = db.relationship('Thread', backref='author', lazy=True)
     is_admin = db.Column(db.Boolean, default=False)
+    notifications = db.relationship('Notification', back_populates='user', lazy='dynamic')
 
     def __repr__(self):
         return f'<User {self.username}>'
@@ -87,6 +106,7 @@ def load_user(user_id):
 @app.route('/logout')
 @login_required
 def logout():
+    flash('Loggade ut!', 'warning')
     logout_user()
     return redirect(url_for('home'))
 
@@ -107,15 +127,25 @@ def forum():
 def view_thread(thread_id):
     thread = Thread.query.get_or_404(thread_id)  # Fetch the thread to ensure it exists
     form = ReplyForm()
-    
+
     if form.validate_on_submit():
-        # Create a new reply, associating it with the thread
         reply = Reply(content=form.content.data, author=current_user, thread=thread)
         db.session.add(reply)
         db.session.commit()
+
+        if thread.author_id != current_user.id:
+            print(f"Creating notification for user ID {thread.author_id}")
+            notification = Notification(
+                user_id=thread.author_id,
+                message=f'{current_user.username} svarade på ditt inlägg {thread.title}',
+                thread_id=thread.id
+            )
+            db.session.add(notification)
+            db.session.commit()
+
         flash('Ditt svar har lagts till.', 'success')
         return redirect(url_for('view_thread', thread_id=thread.id))
-
+    
     replies = Reply.query.filter_by(thread_id=thread.id).order_by(Reply.timestamp.asc()).all()
 
     if form.validate_on_submit():
@@ -152,7 +182,7 @@ def new_thread():
         thread = Thread(title=form.title.data, content=form.content.data, author=current_user)
         db.session.add(thread)
         db.session.commit()
-        flash('Du skapade en tråd {thread.id} skapades', 'success')
+        flash('En tråd skapades', 'success')
         return redirect(url_for('forum'))
     return render_template('new_thread.html', form=form)
 
@@ -220,12 +250,20 @@ def reply_thread(thread_id):
 
 
 
+@app.route('/notifications/read_all')
+@login_required
+def read_all_notifications():
+    notifications = Notification.query.filter_by(user_id=current_user.id, is_read=False).all()
+    for notification in notifications:
+        notification.is_read = True
+    db.session.commit()
+    return redirect(url_for('home'))
 
-migrate = Migrate(app, db)
+
 
 locale.setlocale(locale.LC_TIME, 'sv_SE.UTF-8')
 
-
+migrate = Migrate(app, db)
 
 if __name__ == '__main__':
     with app.app_context():

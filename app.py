@@ -6,7 +6,7 @@ from datetime import datetime
 from flask_migrate import Migrate
 import locale
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, TextAreaField, BooleanField
+from wtforms import StringField, PasswordField, SubmitField, TextAreaField, BooleanField, ValidationError
 from wtforms.validators import DataRequired, Email, Length
 from flask_wtf.csrf import CSRFProtect
 from flask_wtf.file import FileField, FileAllowed
@@ -25,6 +25,23 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 csrf = CSRFProtect(app)
 
+
+
+class ChangeEmailForm(FlaskForm):
+    new_email = StringField('Ny E-Postadress', validators=[DataRequired(), Email()])
+    submit = SubmitField('Spara Ändringar')
+
+class ChangeUsernameForm(FlaskForm):
+    new_username = StringField('Nytt Användarnamn', validators=[DataRequired()])
+    submit = SubmitField('Spara Ändringar')
+
+    def validate_new_username(self, new_username):
+        if new_username.data == current_user.username:
+            raise ValidationError('Det nya användarnamnet måste vara annorlunda än det nuvarande.')
+        
+        existing_user = User.query.filter_by(username=new_username.data).first()
+        if existing_user:
+            raise ValidationError('Användarnamnet är redan taget. Välj ett annat.')
 
 
 
@@ -113,6 +130,9 @@ class RegistrationForm(FlaskForm):
     submit = SubmitField('Registrera dig')
 
 class UpdateProfileForm(FlaskForm):
+    submit = SubmitField('Spara Ändringar')
+    new_email = StringField('Ny E-Postadress', validators=[DataRequired(), Email()])
+    submit = SubmitField('Spara Ändringar')
     profile_picture = FileField('Byt profilbild', validators=[FileAllowed(['jpg', 'png'])])
     submit = SubmitField('Uppdatera')
 
@@ -141,23 +161,62 @@ def forum():
 @app.route('/settings', methods=['GET', 'POST'])
 @login_required
 def edit_profile():
-    form = UpdateProfileForm()  # Initialize the form
-    if form.validate_on_submit():
-        if form.profile_picture.data:
-            picture_file = save_profile_picture(form.profile_picture.data)
+    # Instantiate both forms
+    update_profile_form = UpdateProfileForm()
+    change_email_form = ChangeEmailForm()
+    change_username_form = ChangeUsernameForm()
+
+    # Check if profile picture form was submitted
+    if update_profile_form.validate_on_submit():
+        if update_profile_form.profile_picture.data:
+            picture_file = save_profile_picture(update_profile_form.profile_picture.data)
             current_user.profile_picture = picture_file
             db.session.commit()
             flash('Din profilbild har uppdaterats.', 'info')
-        return redirect(url_for('profile'))
-    
-    return render_template('edit_profile.html', form=form)
+        return redirect(url_for('edit_profile'))
+
+    return render_template('edit_profile.html', 
+                            update_profile_form=update_profile_form,
+                            change_email_form=change_email_form,
+                            change_username_form=change_username_form)
+
+@app.route('/change_email', methods=['POST'])
+@login_required
+def change_email():
+    change_email_form = ChangeEmailForm()
+    if change_email_form.validate_on_submit():
+        new_email = change_email_form.new_email.data
+        existing_user = User.query.filter_by(email=new_email).first()
+        if existing_user:
+            flash('Denna E-Postadressen används redan av en annan användare', 'warning')
+        else:
+            current_user.email = new_email
+            db.session.commit()
+            flash('Din E-Postadress har uppdaterats', 'success')
+        return redirect(url_for('edit_profile'))
+
+    return redirect(url_for('edit_profile'))
+
+@app.route('/change_username', methods=['POST'])
+@login_required
+def change_username():
+    change_username_form = ChangeUsernameForm()
+    if change_username_form.validate_on_submit():
+        current_user.username = change_username_form.new_username.data
+        db.session.commit()
+        flash('Ditt användarnamn har uppdaterats.', 'success')
+        return redirect(url_for('edit_profile'))
+
+    return redirect(url_for('edit_profile'))
+
+
 
 
 
 @app.route('/threads/<int:thread_id>', methods=['GET', 'POST'])
 @login_required
 def view_thread(thread_id):
-    thread = Thread.query.get_or_404(thread_id)  # Fetch the thread to ensure it exists
+    thread = Thread.query.get_or_404(thread_id)  
     form = ReplyForm()
 
     if form.validate_on_submit():
@@ -265,6 +324,7 @@ def register():
 @login_required
 def profile():
     form = UpdateProfileForm()
+
     if form.validate_on_submit():
         if form.profile_picture.data:
             picture_file = save_profile_picture(form.profile_picture.data)

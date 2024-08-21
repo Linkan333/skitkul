@@ -35,12 +35,10 @@
             <div>
                 <p class="mb-0 text-muted"> - {{ reply.author.username }}</p>
             </div>
-            {% if current_user.is_admin %}
-                <p class="mb-1 text-muted">{{ reply.author.email }}</p>
+ 
         </div>
     </li>
 </ul>
-{% endif %}
             <p class="align-items-center ms-2">{{ reply.content }}</p>
         </li>
     {% endfor %}

@@ -1,6 +1,5 @@
 {% extends "layout.html" %}
 
-
 {% block content %}
 <div class="col-md-8 mt-5">
     <div class="card mb-4">
@@ -10,15 +9,67 @@
         <div class="card-body">
             <p><strong>Användarnamn:</strong> 
                 {{ current_user.username }}
-                <button href="#" type="button" class="btn btn-outline-warning btn-sm">Byt Användarnamn</button>
+                <button type="button" class="btn btn-outline-warning btn-sm" data-bs-toggle="modal" data-bs-target="#changeUsernameModal">
+                    Byt Användarnamn
+                </button>
             </p>
+            
+            <div class="modal fade" id="changeUsernameModal" tabindex="-1" aria-labelledby="changeUsernameModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="changeUsernameModalLabel">Byt Användarnamn</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Stäng"></button>
+                        </div>
+                        <form method="POST" action="{{ url_for('change_username') }}">
+                            {{ change_username_form.hidden_tag() }}
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    {{ change_username_form.new_username.label(class="form-label") }}
+                                    {{ change_username_form.new_username(class="form-control") }}
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Avbryt</button>
+                                {{ change_username_form.submit(class="btn btn-primary") }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
             <p><strong>Email:</strong>
-                 {{ current_user.email }}
-                 <button  href="#" type="button" class="btn btn-outline-warning btn-sm">Byt E-Post</button>
-                </p>
+                {{ current_user.email }}
+                <button type="button" class="btn btn-outline-warning btn-sm" data-bs-toggle="modal" data-bs-target="#changeEmailModal">Byt E-Post</button>
+            </p>
+
+            <div class="modal fade" id="changeEmailModal" tabindex="-1" aria-labelledby="changeEmailModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="changeEmailModalLabel">Byt E-Postaddress</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Stäng"></button>
+                        </div>
+                        <form method="POST" action="{{ url_for('change_email') }}">
+                            {{ change_email_form.hidden_tag() }}
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    {{ change_email_form.new_email.label(class="form-label") }}
+                                    {{ change_email_form.new_email(class="form-control") }}
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Avbryt</button>
+                                {{ change_email_form.submit(class="btn btn-primary") }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
             <p><strong>Medlem sedan: </strong>
-                 {{ current_user.join_date.strftime('%B %d, %Y') }}
-                </p>
+                {{ current_user.join_date.strftime('%B %d, %Y') }}
+            </p>
         </div> 
     </div>
 
@@ -26,25 +77,24 @@
         <div class="card mb-4">
             <div class="card-header">
                 <h4>Integritet och Säkerhet <i class="fas fa-shield"></i></h4>
+            </div>
             <div class="card-body">
                 <div class="form-check form-switch mb-2">
                     <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault">
-                    <label class="form-check-label" for="flexSwitchCheckDefault">Låt andra användare se din E-Post.</label>
+                    <label class="form-check-label" for="flexSwitchCheckDefault">Låt andra användare se din E-Post. <small class="text-muted"><i class="fa-solid fa-envelope-circle-check"></i></small></label>
                 </div>
                 <div class="form-check form-switch mb-3 mt-3">
                     <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault">
-                    <label class="form-check-label" for="flexSwitchCheckDefault">Låt användare integrera med dig.</label>
+                    <label class="form-check-label" for="flexSwitchCheckDefault">Låt användare integrera med dig. <small class="text-muted"><i class="fa-solid fa-comment"></i></small></label>
                 </div>
                 <div class="form-check form-switch fill='red' mb-3 mt-3">
                     <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault">
-                    <label class="form-check-label" for="flexSwitchCheckDefault">Låt andra användare skriva till dig.</label>
+                    <label class="form-check-label" for="flexSwitchCheckDefault">Låt andra användare skriva till dig. <small class="text-muted"><i class="fa-solid fa-pen-clip"></i></small></label>
                 </div>
                 
                 <a href="#" class="btn btn-danger mb-3 mt-3">Radera Konto / Deaktivera</a>
                 <a href="#" class="btn btn-secondary">Byt lösenord</a>
             </div>
-
-            
         </div>
     </div>
 </div>

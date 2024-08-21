@@ -39,7 +39,7 @@
 
         <div class="d-flex align-items-center">
             {% if current_user.is_authenticated %}
-                {% set profile_pic = current_user.profile_picture or 'default.jpg' %}
+                {% set profile_pic = current_user.profile_picture or 'default.png' %}
                 <img src="{{ url_for('static', filename='profile_pics/' + profile_pic) }}" alt="Profile Picture" class="img-thumbnail" style="width: 40px; height: 40px; margin-right: 10px;">
                 <a class="nav-link" href="/profile">{{ current_user.username }}</a>
             {% endif %}

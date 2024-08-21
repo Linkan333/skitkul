@@ -7,3 +7,27 @@ body {
     max-height: 50px;
 }
 
+
+/* Default background and border of the switch */
+.form-check-input {
+    background-color: #e67e22; /* Background color when unchecked */
+    border: 1px solid #e67e22; /* Border color */
+}
+
+/* Background and border color when the switch is checked */
+.form-check-input:checked {
+    background-color: #f39c12; /* Background color when checked */
+    border-color: #f39c12; /* Border color when checked */
+}
+
+/* Change the color of the dot inside the switch */
+.form-check-input::before {
+    background-color: #ffffff; /* Dot color */
+}
+
+/* Adjust the size of the dot */
+.form-check-input::before {
+    width: 1.25em;
+    height: 1.25em;
+}
+

@@ -12,7 +12,7 @@
                     <div class="card-body text-center">
                         <h5 class="card-title">{{ current_user.username }}</h5>
                         <p class="card-text">{{ current_user.email }}</p>
-                        <a href="#" class="btn btn-primary">Redigera Profil</a>
+                        <a href="/settings" class="btn btn-primary" style="background-color: #f39c12; border: 1px solid #e67e22;"><i class="fas fa-gear"></i></a>
                     </div>
                 </div>
             </div>
@@ -20,7 +20,7 @@
             <div class="col-md-8">
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h4>Profil Information</h4>
+                        <h4>Profil Information <i class="fas fa-circle-info"></i></h4>
                     </div>
                     <div class="card-body">
                         <p><strong>Användarnamn:</strong> {{ current_user.username }}</p>
@@ -31,7 +31,7 @@
 
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h4>Ändra Profilbild</h4>
+                        <h4>Ändra Profilbild <i class="fas fa-image"></i></h4>
                     </div>
                     <div class="card-body">
                         <form method="POST" enctype="multipart/form-data">
@@ -40,8 +40,8 @@
                                 {{ form.profile_picture.label(class="form-label") }}
                                 {{ form.profile_picture(class="form-control") }}
                             </div>
-                            <div class="d-grid">
-                                {{ form.submit(class="btn btn-primary") }}
+                            <div class="d-grid" >
+                                {{ form.submit(class="btn btn-primary", style="background-color: #f39c12; border: 1px solid #e67e22;") }}
                         </form>
                     </div>
                 </div>
@@ -49,7 +49,7 @@
 
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h4>Tidigare Aktivitet</h4>
+                        <h4>Tidigare Aktivitet <i class="fas fa-envelope"></i></h4>
                     </div>
                     <div class="card-body">
                         <ul>
@@ -64,16 +64,6 @@
                             {% endfor %}
                         </ul>                        
                     </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <h4>Konto Inställningar</h4>
-                </div>
-                <div class="card-body">
-                    <a href="#" class="btn btn-danger">Radera Konto ( {{ current_user.username }} )</a>
-                    <a href="#" class="btn btn-secondary">Byt lösenord</a>
-                </div>
             </div>
         </div>
     </div>

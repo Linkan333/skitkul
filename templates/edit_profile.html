@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+
+
+{% block content %}
+<div class="col-md-8 mt-5">
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Redigera Profil <i class="fas fa-user"></i></h4>
+        </div>
+        <div class="card-body">
+            <p><strong>Användarnamn:</strong> 
+                {{ current_user.username }}
+                <button href="#" type="button" class="btn btn-outline-warning btn-sm">Byt Användarnamn</button>
+            </p>
+            <p><strong>Email:</strong>
+                 {{ current_user.email }}
+                 <button  href="#" type="button" class="btn btn-outline-warning btn-sm">Byt E-Post</button>
+                </p>
+            <p><strong>Medlem sedan: </strong>
+                 {{ current_user.join_date.strftime('%B %d, %Y') }}
+                </p>
+        </div> 
+    </div>
+
+    <div class="col-md-12 mt-5">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4>Integritet och Säkerhet <i class="fas fa-shield"></i></h4>
+            <div class="card-body">
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault">
+                    <label class="form-check-label" for="flexSwitchCheckDefault">Låt andra användare se din E-Post.</label>
+                </div>
+                <div class="form-check form-switch mb-3 mt-3">
+                    <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault">
+                    <label class="form-check-label" for="flexSwitchCheckDefault">Låt användare integrera med dig.</label>
+                </div>
+                <div class="form-check form-switch fill='red' mb-3 mt-3">
+                    <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault">
+                    <label class="form-check-label" for="flexSwitchCheckDefault">Låt andra användare skriva till dig.</label>
+                </div>
+                
+                <a href="#" class="btn btn-danger mb-3 mt-3">Radera Konto / Deaktivera</a>
+                <a href="#" class="btn btn-secondary">Byt lösenord</a>
+            </div>
+
+            
+        </div>
+    </div>
+</div>
+{% endblock %}

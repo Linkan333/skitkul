@@ -23,18 +23,24 @@
 
 <h4 class="mt-5">Tidigare Svar</h4>
 {% if replies %}
-    <ul class="list-group mb-4">
-        {% for reply in replies %}
-        <li class="list-group-item">
-            <div class="d-flex align-items-center">
+<ul class="list-group mb-4">
+    {% for reply in replies %}
+    <li class="list-group-item">
+        <div class="d-flex align-items-center">
+            {% if reply.author.profile_picture %}
                 <img src="{{ url_for('static', filename='profile_pics/' + reply.author.profile_picture) }}" alt="Profile Picture" class="img-thumbnail text-muted" style="width: 50px; height: 50px; margin-right: 10px;">
-                <div>
-                    <p class="mb-0 text-muted"> - {{ reply.author.username }}</p>
-                </div>
-                {% if current_user.is_admin %}
-                 <p class="mb-1 text-muted">{{ reply.author.email }}</p>
-                {% endif %}
+            {% else %}
+                <img src="{{ url_for('static', filename='profile_pics/default.png') }}" alt="Default Profile Picture" class="img-thumbnail text-muted" style="width: 50px; height: 50px; margin-right: 10px;">
+            {% endif %}
+            <div>
+                <p class="mb-0 text-muted"> - {{ reply.author.username }}</p>
             </div>
+            {% if current_user.is_admin %}
+                <p class="mb-1 text-muted">{{ reply.author.email }}</p>
+        </div>
+    </li>
+</ul>
+{% endif %}
             <p class="align-items-center ms-2">{{ reply.content }}</p>
         </li>
     {% endfor %}

@@ -6,7 +6,7 @@ from datetime import datetime
 from flask_migrate import Migrate
 import locale
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, TextAreaField
+from wtforms import StringField, PasswordField, SubmitField, TextAreaField, BooleanField
 from wtforms.validators import DataRequired, Email, Length
 from flask_wtf.csrf import CSRFProtect
 from flask_wtf.file import FileField, FileAllowed
@@ -24,6 +24,8 @@ db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 csrf = CSRFProtect(app)
+
+
 
 
 class Notification(db.Model):
@@ -82,6 +84,12 @@ class User(db.Model, UserMixin):
         return f'<User {self.username}>'
     
 
+class SecurityandIntegrity(FlaskForm):
+    show_email = BooleanField('Låt andra användare se din E-Post.', default=False)
+    allow_interactions = BooleanField('Låt andra användare integrera med dig.', default=False)
+    allow_messages = BooleanField('Låt andra användare skicka meddelanden till dig.', default=False)
+    submit = SubmitField('Spara ändringar')
+
 class ReplyForm(FlaskForm):
     content = TextAreaField('Innehåll', validators=[DataRequired()], render_kw={"rows": 5})
     submit = SubmitField('Svara')
@@ -129,6 +137,21 @@ def home():
 def forum():
     threads = Thread.query.order_by(Thread.timestamp.desc()).all()
     return render_template('forum.html', threads=threads)
+
+@app.route('/settings', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+    form = UpdateProfileForm()  # Initialize the form
+    if form.validate_on_submit():
+        if form.profile_picture.data:
+            picture_file = save_profile_picture(form.profile_picture.data)
+            current_user.profile_picture = picture_file
+            db.session.commit()
+            flash('Din profilbild har uppdaterats.', 'info')
+        return redirect(url_for('profile'))
+    
+    return render_template('edit_profile.html', form=form)
+
 
 
 @app.route('/threads/<int:thread_id>', methods=['GET', 'POST'])

@@ -74,6 +74,23 @@
     </div>
 </nav>
 
+<div class="modal fade" id="cookieConsentModal" tabindex="-1" aria-labelledby="cookieConsentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cookieConsentModalLabel">Vi använder kakor</h5>
+            </div>
+            <div class="modal-body">
+                Denna hemsidan använder kakor för att försäkra att du får den bästa upplevelsen på vår hemsida. Accepterar du vår användning av kakor?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="acceptCookies">Jag accepterar</button>
+                <button type="button" class="btn btn-secondary" id="declineCookies">Jag vill inte acceptera</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 
 
@@ -83,13 +100,60 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var toastElList = [].slice.call(document.querySelectorAll('.toast'))
-            var toastList = toastElList.map(function (toastEl) {
-                return new bootstrap.Toast(toastEl, { autohide: true, delay: 5000 })
-            })
-            toastList.forEach(toast => toast.show())
+        try {
+    document.addEventListener('DOMContentLoaded', function () {
+        var toastElList = [].slice.call(document.querySelectorAll('.toast'))
+        var toastList = toastElList.map(function (toastEl) {
+            return new bootstrap.Toast(toastEl, { autohide: true, delay: 5000 })
+        })
+        toastList.forEach(toast => toast.show())
+    });
+    function setCookie(name, value, days) {
+        var expires = "";
+        if (days) {
+            var date = new Date();
+            date.setTime(date.getTime() + (days*24*60*60*1000));
+            expires = "; expires=" + date.toUTCString();
+        }
+        document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+    }
+
+    function getCookie(name) {
+        var nameEQ = name + "=";
+        var ca = document.cookie.split(';');
+        for(var i=0;i < ca.length;i++) {
+            var c = ca[i];
+            while (c.charAt(0) === ' ') c = c.substring(1,c.length);
+            if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length,c.length);
+        }
+        return null;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        if (!getCookie('cookieConsent')) {
+            var cookieConsentModal = new bootstrap.Modal(document.getElementById('cookieConsentModal'));
+            cookieConsentModal.show();
+        }
+
+        document.getElementById('acceptCookies').addEventListener('click', function () {
+            setCookie('cookieConsent', 'accepted', 365);
+            location.reload();
         });
+
+        document.getElementById('declineCookies').addEventListener('click', function () {
+            setCookie('cookieConsent', 'declined', 365);
+            location.reload();
+        });
+
+        if (getCookie('cookieConsent') === 'accepted') {
+            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+            })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+            ga('create', 'UA-XXXXX-Y', 'auto');
+            ga('send', 'pageview');
+        }
+    });
     </script>
    
 </body>

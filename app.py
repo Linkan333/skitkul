@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, current_user, logout_user, login_required
@@ -357,7 +357,14 @@ def reply_thread(thread_id):
         return redirect(url_for('view_thread', thread_id=thread.id))
     return render_template('reply_thread.html', thread=thread, form=form)
 
-
+@app.route('/cookie-consent', methods=['POST'])
+def cooie_consent():
+    consent = request.json.get('consent')
+    if consent:
+        current_user.cookie_consent = consent
+        db.session.commit()
+        return jsonify({'status': 'success'})
+    return jsonify({'status': 'error'}), 400
 
 @app.route('/notifications/read_all')
 @login_required

@@ -191,7 +191,6 @@ def home():
 
 
 @app.route('/forum')
-@login_required
 def forum():
     threads = Thread.query.order_by(Thread.timestamp.desc()).all()
     return render_template('forum.html', threads=threads)
@@ -259,7 +258,6 @@ def change_username():
 
 
 @app.route('/threads/<int:thread_id>', methods=['GET', 'POST'])
-@login_required
 def view_thread(thread_id):
     thread = Thread.query.get_or_404(thread_id)  
     form = ReplyForm()

@@ -355,7 +355,8 @@ def login():
             flash("Inloggning Lyckades omdirigerar sidan till forumet!", "success")
             return redirect(url_for('forum'))
         else:
-            flash("Fel E-Post address eller lösenord, Försök igen", 'danger') 
+            #flash("Fel E-Post address eller lösenord, Försök igen", 'danger') 
+            pass
     return render_template('login.html', form=form)
 
 @app.route('/register', methods=['GET', 'POST'])

@@ -12,19 +12,52 @@ from flask_wtf.csrf import CSRFProtect
 from flask_wtf.file import FileField, FileAllowed
 import os
 from werkzeug.utils import secure_filename
+from flask_mail import Mail, Message
+from itsdangerous import URLSafeTimedSerializer
+import secrets
+
+
 
 
 app = Flask(__name__)
 
+
+
+app.config['SECRET_KEY'] = '4d8bfddcaa38b430c632ea77d1c3b17c'
+
+
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USERNAME'] = 'skitkulorg@gmail.com'
+app.config['MAIL_PASSWORD'] = 'hbuv tara mich dkyc'
+app.config['MAIL_DEFAULT_SENDER'] = 'skitkulorg@gmail.com'
+
+
+mail = Mail(app)
+serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'your_secret_key_here'
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 csrf = CSRFProtect(app)
 
+
+
+
+
+def send_verification_mail(user_email):
+    token = serializer.dumps(user_email, salt='email-confirm')
+    confirm_url = url_for('confirm_email', token=token, _external=True)
+    html = render_template('confirmation_email.html', confirm_url=confirm_url)
+    subject = "Var snäll att verifiera din E-Postaddress"
+    msg = Message(subject, recipients=[user_email], html=html)
+    mail.send(msg)
 
 
 
@@ -96,6 +129,7 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(150), nullable=False)
     profile_picture = db.Column(db.String(150), nullable=True)
     join_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    is_active = db.Column(db.Boolean, default=False)
     threads = db.relationship('Thread', backref='author', lazy=True)
     is_admin = db.Column(db.Boolean, default=False)
     notifications = db.relationship('Notification', back_populates='user', lazy='dynamic')
@@ -321,8 +355,7 @@ def login():
             flash("Inloggning Lyckades omdirigerar sidan till forumet!", "success")
             return redirect(url_for('forum'))
         else:
-            flash("Fel E-Post address eller lösenord, Försök igen", 'danger')
-        
+            flash("Fel E-Post address eller lösenord, Försök igen", 'danger') 
     return render_template('login.html', form=form)
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -344,12 +377,40 @@ def register():
         try:
             db.session.add(new_user)
             db.session.commit()
-            flash("Du skapade ett konto, omdirigerar till login", 'success')
+
+            send_verification_mail(new_user.email)
+
+
+            flash('En bekräftelse länk har skickats till {new_user.email} kontrollera din inkorg', 'info')
             return redirect(url_for('login'))
         except Exception as e:
             flash(f"Det uppstod ett problem att lägga till din data: {str(e)}", 'danger')
         
     return render_template('register.html', form=form)
+
+
+
+
+@app.route('/confirm/<token>')
+def confirm_email(token):
+    try:
+        email = serializer.loads(token, salt='email-confirm', max_age=3600)
+    except:
+        flash("Bekräftelsen är ogiltig eller har gått ut", 'danger')
+        return redirect(url_for('register'))
+    
+    user = User.query.filter_by(email=email).first_or_404()
+
+    if user.is_active:
+        flash('Ditt konto har redan bekräftats. Logga in', 'info')
+        return redirect(url_for('login'))
+    else:
+        user.is_active = True
+        db.session.commit()
+        flash('Ditt konto är nu verifierat! Du kan nu logga in', 'success')
+    
+    return redirect(url_for('login'))
+
 
 
 @app.route('/profile', methods=['GET', 'POST'])

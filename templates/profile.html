@@ -23,29 +23,13 @@
                         <h4>Profil Information <i class="fas fa-circle-info"></i></h4>
                     </div>
                     <div class="card-body">
-                        <p><strong>Användarnamn:</strong> {{ current_user.username }}</p>
-                        <p><strong>Email:</strong> {{ current_user.email }}</p>
-                        <p><strong>Medlem sedan: </strong> {{ current_user.join_date.strftime('%B %d, %Y') }}</p>
+                        <p><strong>Användarnamn:</strong> {{ user.username }} </p>
+                        {% if current_user.is_admin %}
+                            <p><strong>{{ current_user.email }}</strong></p>
+                        {% endif %}
+                        <p><strong>Medlem sedan: </strong> {{ user.join_date.strftime('%B %d, %Y') }}</p>
                     </div>
                 </div>
-
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h4>Ändra Profilbild <i class="fas fa-image"></i></h4>
-                    </div>
-                    <div class="card-body">
-                        <form method="POST" enctype="multipart/form-data">
-                            {{ form.hidden_tag() }}
-                            <div class="mb-3">
-                                {{ form.profile_picture.label(class="form-label") }}
-                                {{ form.profile_picture(class="form-control") }}
-                            </div>
-                            <div class="d-grid" >
-                                {{ form.submit(class="btn btn-primary", style="background-color: #f39c12; border: 1px solid #e67e22;") }}
-                        </form>
-                    </div>
-                </div>
-
 
                 <div class="card mb-4">
                     <div class="card-header">

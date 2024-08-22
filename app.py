@@ -27,6 +27,10 @@ csrf = CSRFProtect(app)
 
 
 
+
+class EmptyForm(FlaskForm):
+    pass
+
 class ChangeEmailForm(FlaskForm):
     new_email = StringField('Ny E-Postadress', validators=[DataRequired(), Email()])
     submit = SubmitField('Spara Ändringar')
@@ -37,11 +41,11 @@ class ChangeUsernameForm(FlaskForm):
 
     def validate_new_username(self, new_username):
         if new_username.data == current_user.username:
-            raise ValidationError('Det nya användarnamnet måste vara annorlunda än det nuvarande.')
+            flash("Hej Test2")
         
         existing_user = User.query.filter_by(username=new_username.data).first()
         if existing_user:
-            raise ValidationError('Användarnamnet är redan taget. Välj ett annat.')
+            print("Hej test3")
 
 
 
@@ -165,6 +169,7 @@ def edit_profile():
     update_profile_form = UpdateProfileForm()
     change_email_form = ChangeEmailForm()
     change_username_form = ChangeUsernameForm()
+    delete_form = EmptyForm()
 
     # Check if profile picture form was submitted
     if update_profile_form.validate_on_submit():
@@ -173,12 +178,13 @@ def edit_profile():
             current_user.profile_picture = picture_file
             db.session.commit()
             flash('Din profilbild har uppdaterats.', 'info')
-        return redirect(url_for('edit_profile'))
+        return redirect(url_for('edit_profile', form=form, username=username))
 
     return render_template('edit_profile.html', 
                             update_profile_form=update_profile_form,
                             change_email_form=change_email_form,
-                            change_username_form=change_username_form)
+                            change_username_form=change_username_form,
+                            delete_form=delete_form)
 
 @app.route('/change_email', methods=['POST'])
 @login_required
@@ -188,11 +194,11 @@ def change_email():
         new_email = change_email_form.new_email.data
         existing_user = User.query.filter_by(email=new_email).first()
         if existing_user:
-            flash('Denna E-Postadressen används redan av en annan användare', 'warning')
+            flash('Denna E-Postadressen används redan av en annan användare', 'danger')
         else:
             current_user.email = new_email
             db.session.commit()
-            flash('Din E-Postadress har uppdaterats', 'success')
+            flash('Din E-Postadress har uppdaterats', 'info')
         return redirect(url_for('edit_profile'))
 
     return redirect(url_for('edit_profile'))
@@ -201,12 +207,17 @@ def change_email():
 @login_required
 def change_username():
     change_username_form = ChangeUsernameForm()
-    if change_username_form.validate_on_submit():
-        current_user.username = change_username_form.new_username.data
-        db.session.commit()
-        flash('Ditt användarnamn har uppdaterats.', 'success')
+    if change_username_form.validate_on_submit():  
+        new_username = change_username_form.new_username.data
+        existing_user = User.query.filter_by(username=new_username).first()
+        if existing_user:
+            flash('Detta Användarnamnet används redan av en annan användare', 'danger')
+        else:
+            current_user.username = new_username
+            db.session.commit()
+            flash('Ditt användarnamn har uppdaterats', 'info')
         return redirect(url_for('edit_profile'))
-
+    
     return redirect(url_for('edit_profile'))
 
 
@@ -263,6 +274,27 @@ def delete_thread(thread_id):
     flash('Tråden har tagits bort.', 'success')
     return redirect(url_for('forum'))
 
+@app.route('/settings/<username>/delete', methods=['POST'])
+@login_required
+def delete_user(username):
+    form = EmptyForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=username).first()
+
+        if not user or current_user.username != user.username:
+            flash('Du har inte behörighet att ta bort detta konto.', 'danger')
+            return redirect(url_for('forum'))
+
+        db.session.delete(user)
+        db.session.commit()
+        flash(f'Ditt konto {username} har tagits bort', 'info')
+        return redirect(url_for('register'))
+
+    return render_template('edit_profile.html', 
+                           update_profile_form=UpdateProfileForm(),
+                           change_email_form=ChangeEmailForm(),
+                           change_username_form=ChangeUsernameForm(),
+                           delete_form=form)
 
 
 @app.route('/threads/new', methods=['GET', 'POST'])
@@ -325,6 +357,7 @@ def register():
 def profile():
     form = UpdateProfileForm()
 
+
     if form.validate_on_submit():
         if form.profile_picture.data:
             picture_file = save_profile_picture(form.profile_picture.data)
@@ -333,7 +366,7 @@ def profile():
             flash('Din profilbild har uppdaterats.', 'info')
         return redirect(url_for('profile'))
     
-    return render_template('profile.html', form=form)
+    return render_template('profile.html', form=form, user=current_user)
 
 def save_profile_picture(form_picture):
     _, f_ext = os.path.splitext(form_picture.filename)
@@ -342,6 +375,14 @@ def save_profile_picture(form_picture):
 
     form_picture.save(picture_path)
     return picture_fn
+
+@app.route('/profile/<username>')
+def user_profile(username):
+    form = UpdateProfileForm()
+    user = User.query.filter_by(username=username).first_or_404()
+    threads = Thread.query.filter_by(author_id=user.id).all()
+    return render_template('profile.html', user=user, threads=threads, form=form)
+
 
 
 @app.route('/threads/<int:thread_id>/reply', methods=['GET', 'POST'])

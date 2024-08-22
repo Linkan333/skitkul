@@ -37,6 +37,7 @@
                     </div>
                 </div>
             </div>
+            
 
             <p><strong>Email:</strong>
                 {{ current_user.email }}
@@ -91,8 +92,11 @@
                     <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault">
                     <label class="form-check-label" for="flexSwitchCheckDefault">Låt andra användare skriva till dig. <small class="text-muted"><i class="fa-solid fa-pen-clip"></i></small></label>
                 </div>
-                
-                <a href="#" class="btn btn-danger mb-3 mt-3">Radera Konto / Deaktivera</a>
+
+                <form action="{{ url_for('delete_user', username=current_user.username) }}" method="POST" onsubmit="return confirm('Är du säker att du vill ta bort {{ current_user.username }}?');">
+                    {{ delete_form.hidden_tag() }}
+                    <button type="submit" class="btn btn-danger"><i class="fas fa-trash-alt"></i> Radera Konto</button>
+                </form>           
                 <a href="#" class="btn btn-secondary">Byt lösenord</a>
             </div>
         </div>

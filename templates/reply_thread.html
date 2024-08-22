@@ -21,7 +21,7 @@
         {% for reply in thread.replies %}
         <li class="list-group-item">
             <p>{{ reply.content }}</p>
-            <small class="text-muted">Skrivet av {{ reply.author.username }} den {{ reply.timestamp.strftime('%B %d, %Y') }}</small>
+            <a href="{{ url_for('profile', username=reply.author.username) }}">{{ reply.author.username }}</a>
         </li>
         {% else %}
         <p>Inga svar har lagts till ännu...</p>

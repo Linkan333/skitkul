@@ -93,12 +93,12 @@
     </div>
 </div>
 
-<div id="loadingOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: white; z-index: 9999; display: none; align-items: center; justify-content: center;">
+<!---<div id="loadingOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: white; z-index: 9999; display: none; align-items: center; justify-content: center;">
     <div style="text-align: center;">
         <div class="spinner-border text-primary" role="status" style="width: 4rem; height: 4rem;"></div>
         <div class="text-light" style="margin-top: 10px;">Laddar...</div>
     </div>
-</div>
+</div>-->
 
 
 
@@ -165,39 +165,6 @@
         ga('send', 'pageview');
     }
 
-
-    var forms = document.querySelectorAll('form');
-        
-        forms.forEach(function(form) {
-            form.addEventListener('submit', function(event) {
-                // Prevent the form from submitting immediately
-                event.preventDefault();
-
-                // Show the loading overlay
-                var overlay = document.getElementById('loadingOverlay');
-                if (overlay) {
-                    overlay.style.backgroundColor = 'rgba(51, 51, 51, 0.8)'
-                    overlay.style.display = 'flex';
-                }
-
-                // Show the inline spinner next to the button (optional)
-                var spinner = document.getElementById('loadingSpinner');
-                if (spinner) {
-                    spinner.style.display = 'inline-block';
-                }
-
-                // Optional: Disable the form to prevent double submission
-                var submitButton = form.querySelector('button[type="submit"]');
-                if (submitButton) {
-                    submitButton.disabled = true;
-                }
-
-                // Simulate a delay (e.g., 2 seconds) before proceeding with form submission
-                setTimeout(function() {
-                    form.submit();  // Continue with form submission
-                }, 2000);  // 2000ms = 2 seconds delay
-            });
-        });
 });
     </script>
     </body>
